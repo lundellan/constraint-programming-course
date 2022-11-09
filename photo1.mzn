@@ -1,5 +1,5 @@
 include "globals.mzn";
-include "data_1.dzn";
+include "data_2.dzn";
 
 % Global variables
 int: n; % Number of people
