@@ -1,12 +1,14 @@
 import org.jacop.constraints.Not;
 import org.jacop.constraints.PrimitiveConstraint;
 import org.jacop.constraints.XeqC;
+import org.jacop.constraints.XgteqC;
+import org.jacop.constraints.XlteqC;
 import org.jacop.core.FailException;
 import org.jacop.core.IntDomain;
 import org.jacop.core.IntVar;
 import org.jacop.core.Store;
 
-public class SimpleDFS  {
+public class SplitSearch  {
 
 	boolean trace = false;
 	Store store;
@@ -17,7 +19,7 @@ public class SimpleDFS  {
 	public long N=0; /* Number of visited nodes */
 	public long failedNodes = 0; /* Number of failed nodes excluding leave nodes */
 
-	public SimpleDFS(Store s) {
+	public SplitSearch(Store s) {
 		store = s;
 	}
 
@@ -126,14 +128,20 @@ public class SimpleDFS  {
 	}
 
 	public class ChoicePoint {
+		private final int LOWER_HALF = 0;
+		private final int UPPER_HALF = 1;
 
 		IntVar var;
 		IntVar[] searchVariables;
 		int value;
+		int strategy;
+    int index;
 
 		public ChoicePoint (IntVar[] v) {
-			var = selectVariable(v);
-			value = selectValue(var);
+			this.var = selectVariable(v);
+			this.value = selectValue(var);
+			this.strategy = LOWER_HALF;
+			this.index = 0;
 		}
 
 		public IntVar[] getSearchVariables() {
@@ -145,32 +153,48 @@ public class SimpleDFS  {
 		 */ 
 		IntVar selectVariable(IntVar[] v) {
 			if (v.length != 0) {
-
-				searchVariables = new IntVar[v.length-1];
-				for (int i = 0; i < v.length-1; i++) {
-						searchVariables[i] = v[i+1]; 
+				IntVar value = v[0];
+				
+				if (value.min() == value.max()) {
+						searchVariables = new IntVar[v.length-1];
+						for (int i = 0; i < v.length-1; i++) {
+								searchVariables[i] = v[i+1]; 
+						}
+				} else {
+						searchVariables = v;
 				}
 
 				return v[0];
-
 			} else {
-				System.err.println("Zero length list of variables for labeling");
-				return new IntVar(store);
+					System.err.println("Zero length list of variables for labeling");                 
+					return new IntVar(store);
 			}
 		}
 
-		/**
-		 * example value selection; indomain_min
-		 */ 
 		int selectValue(IntVar v) {
-				return v.min();
+			int c = 0;
+			if (strategy == LOWER_HALF) {
+					c = (v.min() + v.max()) / 2;
+			} else if (strategy == UPPER_HALF) {
+					if ((v.min() + v.max()) % 2 == 0) {
+							c = (v.min() + v.max()) / 2;
+					} else {
+							c = (v.min() + v.max() + 1) / 2;
+					}
+			} else {
+					c = v.min();
+			}
+			return c;
 		}
 
-		/**
-		 * example constraint assigning a selected value
-		 */
 		public PrimitiveConstraint getConstraint() {
+			if (strategy == LOWER_HALF) {
+				return new XlteqC(var, value);
+			} else if (strategy == UPPER_HALF) {
+				return new XgteqC(var, value);
+			} else {
 				return new XeqC(var, value);
+			}
 		}
 	}
 }

@@ -1,5 +1,5 @@
 include "globals.mzn";
-include "assignment2_data3.dzn";
+include "assignment2_data1.dzn";
 
 int: graph_size;
 int: start;
@@ -21,9 +21,9 @@ arcs = array2d(1..n_edges,
                [if j == 1 then cities_1[i] else cities_2[i] endif | i in 1..n_edges, j in 1..2]);
                                   
 balances = array1d(1..graph_size,
-                   [if i == start then n_dests elseif exists(j in 1..n_dests)(dests[j] == i) then -1 else 0 endif | i in 1..graph_size]);  
+                   [if i == start then n_dests elseif i in dests then -1 else 0 endif | i in 1..graph_size]);  
                    
-total_cost = sum([if flows[i] != 0 then 1 * costs[i] else 0 endif | i in 1..n_edges]);
+total_cost = sum([if flows[i] != 0 then costs[i] else 0 endif | i in 1..n_edges]);
 
 constraint network_flow(arcs, balances, flows);
 solve minimize total_cost;
