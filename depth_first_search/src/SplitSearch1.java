@@ -31,6 +31,7 @@
 import org.jacop.constraints.Not;
 import org.jacop.constraints.PrimitiveConstraint;
 import org.jacop.constraints.XeqC;
+import org.jacop.constraints.XlteqC;
 import org.jacop.core.FailException;
 import org.jacop.core.IntDomain;
 import org.jacop.core.IntVar;
@@ -43,7 +44,7 @@ import org.jacop.core.Store;
  * @version 4.2
  */
 
-public class SimpleDFS {
+public class SplitSearch1 {
 
     boolean trace = false;
 
@@ -82,7 +83,7 @@ public class SimpleDFS {
      */
     public long failedNodes = 0;
 
-    public SimpleDFS(Store s) {
+    public SplitSearch1(Store s) {
         store = s;
     }
 
@@ -222,11 +223,17 @@ public class SimpleDFS {
          */
         IntVar selectVariable(IntVar[] v) {
             if (v.length != 0) {
+                IntVar value = v[0];
 
-                searchVariables = new IntVar[v.length - 1];
-                for (int i = 0; i < v.length - 1; i++) {
-                    searchVariables[i] = v[i + 1];
+                if (value.min() == value.max()) {
+                    searchVariables = new IntVar[v.length - 1];
+                    for (int i = 0; i < v.length - 1; i++) {
+                        searchVariables[i] = v[i + 1];
+                    }
+                } else {
+                    searchVariables = v;
                 }
+
 
                 return v[0];
 
@@ -240,14 +247,14 @@ public class SimpleDFS {
          * example value selection; indomain_min
          */
         int selectValue(IntVar v) {
-            return v.min();
+            return (v.min() + v.max()) / 2;
         }
 
         /**
          * example constraint assigning a selected value
          */
         public PrimitiveConstraint getConstraint() {
-            return new XeqC(var, value);
+            return new XlteqC(var, value);
         }
     }
 }
