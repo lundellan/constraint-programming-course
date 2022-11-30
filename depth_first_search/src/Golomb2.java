@@ -32,17 +32,9 @@
 
 import java.util.ArrayList;
 
-import org.jacop.constraints.Alldiff;
-import org.jacop.constraints.XeqC;
-import org.jacop.constraints.XltY;
-import org.jacop.constraints.XlteqC;
-import org.jacop.constraints.XplusClteqZ;
-import org.jacop.constraints.XplusYeqZ;
-import org.jacop.core.IntVar;
-import org.jacop.core.Store;
-import org.jacop.search.PrioritySearch;
-// JaCoP built in search
-import org.jacop.search.Search;
+import org.jacop.core.*; 
+import org.jacop.constraints.*; 
+import org.jacop.search.*; 
 
 
 /**
@@ -64,7 +56,7 @@ import org.jacop.search.Search;
  *         The presented ruler with 4 marks of length 6 is optimal
  */
 
-public class Golomb {
+public class Golomb2 {
 
   Store store;
 
@@ -91,7 +83,7 @@ public class Golomb {
    *             argument specifies the upper bound of the optimal solution.
    */
   public static void main(String args[]) {
-    Golomb example = new Golomb();
+    Golomb2 example = new Golomb2();
     example.model();
   }
 
@@ -164,18 +156,13 @@ public class Golomb {
 
     IntVar cost = numbers[numbers.length - 1];
 
-    SplitSearch2 search = new SplitSearch2(store);
-    // SimpleDFS search = new SimpleDFS(store);
-    // SplitSearch1 search = new SplitSearch1(store);
+    Search<IntVar> search = new DepthFirstSearch<IntVar>();
+	  SelectChoicePoint<IntVar> select = new InputOrderSelect<IntVar>(store, numbers, new IndomainRandom<IntVar>());
 
-    search.store = store;
-    search.setVariablesToReport(numbers);
-    search.setCostVariable(cost);
+    boolean result = search.labeling(store, select, cost);
 
-    boolean result = search.label(numbers);
-
-    System.out.println("Total number of visited nodes = " + search.N);
-    System.out.println("Total number of failed nodes = " + search.failedNodes);
+    System.out.println("Total number of visited nodes = " + search.getNodes());
+    System.out.println("Total number of failed nodes = " + search.getWrongDecisions());
 
     if (result) {
       System.out.println("the search aborted early, optimallity was not proven");

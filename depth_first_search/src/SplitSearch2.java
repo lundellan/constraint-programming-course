@@ -247,10 +247,10 @@ public class SplitSearch2 {
          * example value selection; indomain_min
          */
         int selectValue(IntVar v) {
-            if (v.max()+v.min()  %2==0) {
-                return (v.max()+v.min())/2;
+            if (v.max() + v.min() % 2==0) {
+                return (v.max() + v.min()) / 2;
             } else {
-                return (v.max()+v.min()+1)/2;
+                return (v.max() + v.min() + 1) /2;
             }
         }
 
