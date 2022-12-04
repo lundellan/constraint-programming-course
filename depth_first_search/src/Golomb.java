@@ -164,8 +164,8 @@ public class Golomb {
 
     IntVar cost = numbers[numbers.length - 1];
 
-    SplitSearch2 search = new SplitSearch2(store);
-    // SimpleDFS search = new SimpleDFS(store);
+    // SplitSearch2 search = new SplitSearch2(store);
+    SimpleDFS search = new SimpleDFS(store);
     // SplitSearch1 search = new SplitSearch1(store);
 
     search.store = store;

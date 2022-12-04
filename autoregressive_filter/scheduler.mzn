@@ -1,5 +1,5 @@
 include "globals.mzn";
-include "assignment4_1_1.dzn";
+include "assignment4_1_3.dzn";
 
 % Global variables
 int : del_add; % Number of cycles to complete addition
@@ -12,9 +12,7 @@ set of int : add;
 set of int : mul;
 array[1..n] of set of int : dependencies;
 
-% --------------------------------
-% Maximum amount of cycles it can take. N = number of operations, and since del_mul > del_add, we multiply by del_mul
-int: maxCycles = n*del_mul;
+int: maxCycles = n * del_mul;
 
 % Create an array of 0..maxCycles
 array[1..n] of var 0..maxCycles : s;
@@ -26,9 +24,6 @@ array[1..n] of var 1..del_mul : total = [if i in mul then del_mul else del_add e
 int: no_adds = length(set2array(add));
 int: no_muls = length(set2array(mul));
 
-% Create arrays of s_adds and s_muls to keep track of the start times of the respective operations
-array[1..no_adds] of var 0..maxCycles: s_adds = [s[i] | i in 1..n where i in add];
-array[1..no_muls] of var 0..maxCycles: s_muls = [s[i] | i in 1..n where i in mul];
 
 % Check that the total time plus the execution time is less than the dependancy time
 constraint
@@ -37,27 +32,28 @@ constraint
   		   total[i] + s[i] <= s[dep]
     )
   );
+  
+% Starttider som kan varieras 
+array[1..no_adds] of var 0..maxCycles: start_adds = [s[i] | i in 1..n where i in add];
+array[1..no_muls] of var 0..maxCycles: start_muls = [s[i] | i in 1..n where i in mul];
 
-array[1..no_adds] of var 0..del_add: d_add = [del_add | i in 1..no_adds];
-array[1..no_muls] of var 0..del_mul: d_mul = [del_mul | i in 1..no_muls];
-array[1..no_adds] of var 0..1: r_add = [1 | i in 1..no_adds];
-array[1..no_muls] of var 0..1: r_mul = [1 | i in 1..no_muls];
+% Durations
+array[1..no_adds] of var 0..del_add: duration_adds = [del_add | i in 1..no_adds];
+array[1..no_muls] of var 0..del_mul: duration_muls = [del_mul | i in 1..no_muls];
+
+% Behövs enbart en additioner och multiplier alltid
+array[1..no_adds] of var 0..1: needed_add = [1 | i in 1..no_adds];
+array[1..no_muls] of var 0..1: needed_mul = [1 | i in 1..no_muls];
+
 var int: cost = max([s[l] + total[l] | l in last]);
 
-% Input: 
-% array[int] of var int: s --> start times // 
-% array[int] of var int: d, --> durations
-% array[int] of var int: r,  -> resource requirements
-% var int: b --> global resource bound (number_add / number_mul)
-constraint cumulative(s_adds, d_add, r_add, number_add); % Cumulative add
-constraint cumulative(s_muls, d_mul, r_mul, number_mul); % Cumulative mul
+constraint cumulative(start_adds, duration_adds, needed_add, number_add);
+constraint cumulative(start_muls, duration_muls, needed_mul, number_mul);
 
 solve minimize cost;
 
-output( [show(r_add)] );
-
 output([
-  "Strt: ", show(s_adds),
-  "Strt: ", show(s_muls),
-  "Strt: ", show(cost)
+  show(start_adds),
+  show(start_muls),
+  show(cost)
 ]);
