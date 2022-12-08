@@ -14,18 +14,18 @@ array[1..n] of set of int : dependencies;
 
 int: maxCycles = n * del_mul;
 
-% Create an array of 0..maxCycles
+% Maxamiala antalet möjliga cykler
 array[1..n] of var 0..maxCycles : s;
 
-% Create an array of total costs of the operations
+% Totala kostnaden för alla operationer
 array[1..n] of var 1..del_mul : total = [if i in mul then del_mul else del_add endif | i in 1..n];
 
-% Get the length of no_adds and no_muls
+% Antalet additions och multiplikations operationer
 int: no_adds = length(set2array(add));
 int: no_muls = length(set2array(mul));
 
 
-% Check that the total time plus the execution time is less than the dependancy time
+% Kollar så att den totala tiden för en gren plus nuvarande exekvering är mindre än dependency tiden
 constraint
   forall(i in 1..n)(
   	  forall(dep in dependencies[i]) (
@@ -47,6 +47,7 @@ array[1..no_muls] of var 0..1: needed_mul = [1 | i in 1..no_muls];
 
 var int: cost = max([s[l] + total[l] | l in last]);
 
+% Starttiderna, durations, antalet ALUer som behövs, antalet tillgängliga ALUer totalt
 constraint cumulative(start_adds, duration_adds, needed_add, number_add);
 constraint cumulative(start_muls, duration_muls, needed_mul, number_mul);
 
